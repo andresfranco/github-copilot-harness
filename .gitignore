@@ -1,0 +1,100 @@
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# =========================
+# Backend: Python / FastAPI
+# =========================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing and Type Checking
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Python packaging
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# =========================
+# Frontend: Node / React 19
+# =========================
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production / Build outputs
+/dist/
+/build/
+.next/
+out/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Caches
+.eslintcache
+.stylelintcache
+.vite/
+
+# =========================
+# Database: PostgreSQL
+# =========================
+# Local docker volumes / data directories
+pgdata/
+postgres-data/
+db-data/
+*.sqlite3  # Just in case you use sqlite for local testing
+
+# =========================
+# IDEs and Editors
+# =========================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+.cursor/
+.zed/
+.trae/
+
+# =========================
+# OS Generated Files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
