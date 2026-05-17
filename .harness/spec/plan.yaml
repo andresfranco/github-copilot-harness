@@ -1,0 +1,194 @@
+feature: snowflake-key-manager
+version: 1
+
+tasks:
+
+  - id: db-models
+    feature: snowflake-key-manager
+    title: "Database models and migrations"
+    worker: harness-worker-database
+    depends_on: []
+    touches:
+      - backend/app/models/user.py
+      - backend/app/models/snowflake_key.py
+      - backend/app/models/audit_log.py
+      - backend/app/models/__init__.py
+      - backend/alembic/versions/001_initial_schema.py
+      - backend/alembic/env.py
+      - backend/alembic.ini
+    test_files:
+      - backend/tests/unit/test_models.py
+      - backend/tests/migrations/test_migration_001.py
+
+  - id: backend-auth
+    feature: snowflake-key-manager
+    title: "User authentication (register, login, logout, profile)"
+    worker: harness-worker-backend
+    depends_on: [db-models]
+    touches:
+      - backend/app/core/config.py
+      - backend/app/core/security.py
+      - backend/app/core/deps.py
+      - backend/app/schemas/user.py
+      - backend/app/schemas/token.py
+      - backend/app/services/auth_service.py
+      - backend/app/api/auth.py
+      - backend/app/main.py
+      - backend/requirements.txt
+    test_files:
+      - backend/tests/unit/test_auth_service.py
+      - backend/tests/integration/test_auth_api.py
+
+  - id: backend-key-generation
+    feature: snowflake-key-manager
+    title: "RSA key pair generation and output generation service"
+    worker: harness-worker-backend
+    depends_on: [db-models]
+    touches:
+      - backend/app/services/key_generation_service.py
+      - backend/app/schemas/key.py
+    test_files:
+      - backend/tests/unit/test_key_generation_service.py
+
+  - id: backend-key-storage
+    feature: snowflake-key-manager
+    title: "Key storage service (CRUD, encryption)"
+    worker: harness-worker-backend
+    depends_on: [db-models, backend-key-generation]
+    touches:
+      - backend/app/services/key_storage_service.py
+      - backend/app/services/audit_service.py
+    test_files:
+      - backend/tests/unit/test_key_storage_service.py
+      - backend/tests/unit/test_audit_service.py
+
+  - id: backend-key-api
+    feature: snowflake-key-manager
+    title: "Key management API endpoints"
+    worker: harness-worker-backend
+    depends_on: [backend-auth, backend-key-storage]
+    touches:
+      - backend/app/api/keys.py
+      - backend/app/api/dashboard.py
+    test_files:
+      - backend/tests/integration/test_keys_api.py
+      - backend/tests/integration/test_dashboard_api.py
+
+  - id: backend-settings-api
+    feature: snowflake-key-manager
+    title: "User settings API endpoint"
+    worker: harness-worker-backend
+    depends_on: [backend-auth]
+    touches:
+      - backend/app/api/settings.py
+    test_files:
+      - backend/tests/integration/test_settings_api.py
+
+  - id: frontend-scaffold
+    feature: snowflake-key-manager
+    title: "Frontend project scaffold (Vite, React 19, TS, Tailwind, routing)"
+    worker: harness-worker-frontend
+    depends_on: []
+    touches:
+      - frontend/package.json
+      - frontend/vite.config.ts
+      - frontend/tsconfig.json
+      - frontend/tailwind.config.ts
+      - frontend/postcss.config.js
+      - frontend/index.html
+      - frontend/src/main.tsx
+      - frontend/src/App.tsx
+      - frontend/src/router.tsx
+      - frontend/src/types/index.ts
+      - frontend/src/api/client.ts
+    test_files:
+      - frontend/src/App.test.tsx
+
+  - id: frontend-auth
+    feature: snowflake-key-manager
+    title: "Frontend auth pages (Login, Register) and auth API client"
+    worker: harness-worker-frontend
+    depends_on: [frontend-scaffold]
+    touches:
+      - frontend/src/api/auth.ts
+      - frontend/src/hooks/useAuth.ts
+      - frontend/src/store/authStore.ts
+      - frontend/src/pages/LoginPage.tsx
+      - frontend/src/pages/RegisterPage.tsx
+      - frontend/src/components/ProtectedRoute.tsx
+    test_files:
+      - frontend/src/pages/__tests__/LoginPage.test.tsx
+      - frontend/src/pages/__tests__/RegisterPage.test.tsx
+      - frontend/src/hooks/__tests__/useAuth.test.ts
+
+  - id: frontend-dashboard
+    feature: snowflake-key-manager
+    title: "Dashboard page with stats cards and recent activity"
+    worker: harness-worker-frontend
+    depends_on: [frontend-auth]
+    touches:
+      - frontend/src/api/dashboard.ts
+      - frontend/src/pages/DashboardPage.tsx
+      - frontend/src/components/StatsCard.tsx
+      - frontend/src/components/RecentActivity.tsx
+    test_files:
+      - frontend/src/pages/__tests__/DashboardPage.test.tsx
+
+  - id: frontend-generate-key
+    feature: snowflake-key-manager
+    title: "Generate Key page with form, validation, and outputs display"
+    worker: harness-worker-frontend
+    depends_on: [frontend-auth]
+    touches:
+      - frontend/src/api/keys.ts
+      - frontend/src/pages/GenerateKeyPage.tsx
+      - frontend/src/components/KeyGenerationForm.tsx
+      - frontend/src/components/KeyOutputsDisplay.tsx
+      - frontend/src/components/SensitiveValueDisplay.tsx
+      - frontend/src/components/CopyButton.tsx
+      - frontend/src/components/DownloadButton.tsx
+    test_files:
+      - frontend/src/pages/__tests__/GenerateKeyPage.test.tsx
+      - frontend/src/components/__tests__/KeyGenerationForm.test.tsx
+
+  - id: frontend-key-management
+    feature: snowflake-key-manager
+    title: "Key List, Key Details, Edit, Rotate pages and components"
+    worker: harness-worker-frontend
+    depends_on: [frontend-generate-key]
+    touches:
+      - frontend/src/pages/KeyListPage.tsx
+      - frontend/src/pages/KeyDetailsPage.tsx
+      - frontend/src/pages/EditKeyMetadataPage.tsx
+      - frontend/src/pages/RotateKeyPage.tsx
+      - frontend/src/components/KeyListTable.tsx
+      - frontend/src/components/KeyDetailsTabView.tsx
+      - frontend/src/components/ConfirmationDialog.tsx
+      - frontend/src/components/StatusBadge.tsx
+    test_files:
+      - frontend/src/pages/__tests__/KeyListPage.test.tsx
+      - frontend/src/pages/__tests__/KeyDetailsPage.test.tsx
+
+  - id: frontend-settings
+    feature: snowflake-key-manager
+    title: "Settings page (profile + defaults)"
+    worker: harness-worker-frontend
+    depends_on: [frontend-auth]
+    touches:
+      - frontend/src/pages/SettingsPage.tsx
+      - frontend/src/api/settings.ts
+    test_files:
+      - frontend/src/pages/__tests__/SettingsPage.test.tsx
+
+  - id: infrastructure
+    feature: snowflake-key-manager
+    title: "Docker Compose, .env.example, README"
+    worker: harness-worker-backend
+    depends_on: [backend-auth, backend-key-api]
+    touches:
+      - docker-compose.yml
+      - backend/Dockerfile
+      - frontend/Dockerfile
+      - .env.example
+      - README.md
+    test_files: []
